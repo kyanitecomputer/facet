@@ -1,0 +1,33 @@
+# Supply-chain hardening.
+#
+# Goal: never adopt a newly published package version until it has been on the
+# registry long enough for the ecosystem to detect and pull compromised releases
+# (most malicious releases are caught within hours; we wait two weeks).
+#
+#   minimumReleaseAge: 20160 minutes = 14 days. Applies to every newly resolved
+#     package, direct or transitive.
+#   minimumReleaseAgeStrict: fail the install instead of silently falling back to
+#     a too-new version, so the cooldown cannot be bypassed by an update.
+#   minimumReleaseAgeIgnoreMissingTime: false — refuse packages whose registry
+#     metadata lacks a publish time rather than waving them through.
+#
+# trustLockfile treats the committed pnpm-lock.yaml as the vetted baseline: its
+# existing entries install without re-checking the cooldown (the stack is pinned
+# to deliberately recent versions), while ANY change to the tree — a dependency
+# bump, a new package, a transitive resolution — is still gated by the rules
+# above. Reviewers must therefore scrutinise pnpm-lock.yaml diffs in every PR.
+minimumReleaseAge: 20160
+minimumReleaseAgeStrict: true
+minimumReleaseAgeIgnoreMissingTime: false
+trustLockfile: true
+
+# First-party schema package: exempt from the cooldown so local/published schema
+# iterations (currently a link: dep, later an npm/BSR release) are adopted
+# immediately. It is our own code, not third-party supply-chain surface.
+minimumReleaseAgeExclude:
+  - "@kyanite/schema"
+
+# Build scripts are opt-in; only these packages may run install lifecycle scripts.
+allowBuilds:
+  "@tailwindcss/oxide": true
+  esbuild: true
