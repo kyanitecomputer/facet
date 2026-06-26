@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+/* ============================================================================
+ * Facet theme
+ * ----------------------------------------------------------------------------
+ * A small, dependency-free design-token layer over Tailwind v4, inspired by the
+ * Oxide design system but with a cool, blue-forward palette. Colours are
+ * authored in OKLCH for perceptually even steps and predictable contrast.
+ *
+ * ┌─ HOW TO REBRAND ─────────────────────────────────────────────────────────┐
+ * │ Everything visual derives from the variables in the `BRAND TOKENS` block  │
+ * │ below. To apply your own colour scheme / brand identity you only need to  │
+ * │ override those few variables — either by editing this file, or by         │
+ * │ shipping a tiny stylesheet loaded after it, e.g.                          │
+ * │                                                                            │
+ * │   :root {                                                                  │
+ * │     --brand-hue: 145;          (rotate the whole palette to green)         │
+ * │     --brand-chroma: 0.17;      (punchier accent)                           │
+ * │     --brand-neutral-hue: 150;  (tint surfaces/text to match)               │
+ * │   }                                                                        │
+ * │                                                                            │
+ * │ The semantic tokens (`--surface`, `--accent`, …) and their Tailwind        │
+ * │ utility names (`bg-surface`, `text-accent`, …) stay stable, so components  │
+ * │ never need to change. Status colours (ok/warn/error) are intentionally     │
+ * │ independent of the brand hue so warnings stay legible after a rebrand.     │
+ * └────────────────────────────────────────────────────────────────────────┘
+ * ========================================================================== */
+
+/* ----------------------------------------------------------------------------
+ * BRAND TOKENS — the single place customers override.
+ * -------------------------------------------------------------------------- */
+:root {
+	/* Accent hue (OKLCH hue angle 0–360). ~258 = a confident indigo-blue. */
+	--brand-hue: 258;
+	/* Accent saturation. Higher = more vivid brand colour. */
+	--brand-chroma: 0.15;
+
+	/* Surfaces, borders and text carry a faint tint of this hue so the whole UI
+	 * reads as "cool/blue" rather than flat grey. Keep close to --brand-hue. */
+	--brand-neutral-hue: 264;
+}
+
+/* ----------------------------------------------------------------------------
+ * SEMANTIC TOKENS — light scheme (default).
+ * -------------------------------------------------------------------------- */
+:root {
+	color-scheme: light;
+
+	--surface: oklch(0.994 0.003 var(--brand-neutral-hue));
+	--surface-muted: oklch(0.967 0.008 var(--brand-neutral-hue));
+	--border: oklch(0.91 0.012 var(--brand-neutral-hue));
+	--foreground: oklch(0.28 0.035 var(--brand-neutral-hue));
+	--foreground-muted: oklch(0.53 0.03 var(--brand-neutral-hue));
+
+	--accent: oklch(0.53 var(--brand-chroma) var(--brand-hue));
+	--accent-foreground: oklch(0.99 0.01 var(--brand-hue));
+
+	--ok: oklch(0.58 0.13 155);
+	--warn: oklch(0.66 0.14 65);
+	--error: oklch(0.55 0.2 25);
+}
+
+/* ----------------------------------------------------------------------------
+ * SEMANTIC TOKENS — dark scheme.
+ * Applied automatically when the OS prefers dark (unless light is forced via
+ * `data-theme="light"`), or explicitly via `data-theme="dark"`.
+ * -------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+
+		--surface: oklch(0.17 0.018 var(--brand-neutral-hue));
+		--surface-muted: oklch(0.214 0.024 var(--brand-neutral-hue));
+		--border: oklch(0.31 0.028 var(--brand-neutral-hue));
+		--foreground: oklch(0.96 0.01 var(--brand-neutral-hue));
+		--foreground-muted: oklch(0.72 0.025 var(--brand-neutral-hue));
+
+		--accent: oklch(0.7 0.142 var(--brand-hue));
+		--accent-foreground: oklch(0.18 0.03 var(--brand-neutral-hue));
+
+		--ok: oklch(0.72 0.15 158);
+		--warn: oklch(0.8 0.15 75);
+		--error: oklch(0.68 0.19 22);
+	}
+}
+
+[data-theme="dark"] {
+	color-scheme: dark;
+
+	--surface: oklch(0.17 0.018 var(--brand-neutral-hue));
+	--surface-muted: oklch(0.214 0.024 var(--brand-neutral-hue));
+	--border: oklch(0.31 0.028 var(--brand-neutral-hue));
+	--foreground: oklch(0.96 0.01 var(--brand-neutral-hue));
+	--foreground-muted: oklch(0.72 0.025 var(--brand-neutral-hue));
+
+	--accent: oklch(0.7 0.142 var(--brand-hue));
+	--accent-foreground: oklch(0.18 0.03 var(--brand-neutral-hue));
+
+	--ok: oklch(0.72 0.15 158);
+	--warn: oklch(0.8 0.15 75);
+	--error: oklch(0.68 0.19 22);
+}
+
+/* ----------------------------------------------------------------------------
+ * Bundled, self-hosted fonts (SIL OFL 1.1, see static/fonts/LICENSE-*.txt).
+ * Latin variable subsets only (~88 KB total); CJK glyphs fall back to the
+ * system Noto fonts declared in --font-sans, keeping the embedded bundle small.
+ * -------------------------------------------------------------------------- */
+@font-face {
+	font-family: "Inter Variable";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("/fonts/inter-latin-variable.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "JetBrains Mono Variable";
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: swap;
+	src: url("/fonts/jetbrains-mono-latin-variable.woff2") format("woff2");
+}
+
+/* ----------------------------------------------------------------------------
+ * Tailwind theme mapping. `inline` keeps utilities referencing the semantic
+ * variables directly, so light/dark (and any rebrand) take effect at runtime.
+ * -------------------------------------------------------------------------- */
+@theme inline {
+	--color-surface: var(--surface);
+	--color-surface-muted: var(--surface-muted);
+	--color-border: var(--border);
+	--color-foreground: var(--foreground);
+	--color-foreground-muted: var(--foreground-muted);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-ok: var(--ok);
+	--color-warn: var(--warn);
+	--color-error: var(--error);
+
+	--font-sans:
+		"Inter Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+		Roboto, "Helvetica Neue", Arial, "Noto Sans", "Noto Sans CJK SC",
+		"Noto Sans CJK JP", sans-serif;
+	--font-mono:
+		"JetBrains Mono Variable", ui-monospace, "Cascadia Code", "Source Code Pro",
+		Menlo, Consolas, monospace;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	background-color: var(--surface);
+	color: var(--foreground);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
