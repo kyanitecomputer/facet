@@ -1,0 +1,3 @@
+# Facet is an internal control plane and must not be indexed.
+User-agent: *
+Disallow: /
