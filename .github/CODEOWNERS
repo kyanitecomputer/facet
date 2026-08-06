@@ -1,0 +1,8 @@
+# Default owners for everything in the repo.
+# TODO: replace with the real Kyanite GitHub team/handle.
+* @kyanite/maintainers
+
+# Workflow and supply-chain files require maintainer review.
+/.github/ @kyanite/maintainers
+/pnpm-workspace.yaml @kyanite/maintainers
+/pnpm-lock.yaml @kyanite/maintainers

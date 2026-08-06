@@ -1,0 +1,81 @@
+# Facet CI.
+#
+# Security notes (see the github-actions best-practice skill):
+#   - actions/checkout is pinned to a full commit SHA.
+#   - Remaining actions are tag-pinned; Dependabot (.github/dependabot.yml) keeps
+#     them current. TODO: re-pin actions/setup-node and actions/cache to SHAs.
+#   - Default token permissions are read-only.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-node@v4 # TODO: pin to SHA
+        with:
+          node-version: 22
+
+      - name: Enable Corepack (pnpm)
+        run: |
+          corepack enable
+          pnpm config set store-dir ~/.pnpm-store --global
+
+      - uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint & format (Biome)
+        run: pnpm lint
+
+      - name: Type-check (svelte-check)
+        run: pnpm check
+
+      - name: Build (static SPA)
+        run: pnpm build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Unit tests (Vitest, incl. mock backend)
+        run: pnpm exec vitest run
+
+      - name: End-to-end tests (Playwright)
+        run: pnpm exec playwright test
+
+  fallow:
+    # Codebase-intelligence gate (dead code, duplication, complexity, deps).
+    # Advisory for now: the skeleton has intentional, not-yet-consumed seams
+    # (transport/mock/proto). Flip continue-on-error to false once they are wired.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0 # fallow audit diffs against the base ref
+
+      - uses: actions/setup-node@v4 # TODO: pin to SHA
+        with:
+          node-version: 22
+
+      - name: Fallow audit
+        run: npx --yes fallow@2.101.0 audit
